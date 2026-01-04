@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction History</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="top-actions">
+    <button id="backBtn" class="btn btn-secondary">Back to Dashboard</button>
+    <button id="logoutBtn" class="btn btn-danger">Logout</button>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th>Date &amp; Time</th>
+        <th>Type</th>
+        <th>Amount</th>
+        <th>Status</th>
+        <th>Reason</th>
+    </tr>
+    </thead>
+    <tbody id="txBody">
+    <!-- Transactions will be injected here -->
+    </tbody>
+</table>
+
+<script src="app.js"></script>
+<script>
+    const user = APP.requireAuth();
+    if (!user) throw new Error('Not authenticated');
+
+    const txBody = document.getElementById('txBody');
+    const backBtn = document.getElementById('backBtn');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    function render() {
+        const txs = APP.getTransactions(user.username);
+        txBody.innerHTML = txs.map(t => `
+            <tr>
+                <td>${t.dateTime || t.date || ''}</td>
+                <td>${t.type}</td>
+                <td>${t.amount > 0 ? '+'+t.amount : t.amount}</td>
+                <td class="${t.status === 'Success' ? 'tx-status-success' : 'tx-status-failed'}">${t.status}</td>
+                <td>${t.meta && t.meta.reason ? t.meta.reason : ''}</td>
+            </tr>
+        `).join('');
+    }
+
+    backBtn.onclick = () => window.location.href = 'dashboard.html';
+    logoutBtn.onclick = () => { APP.logout(); window.location.href = 'login.html'; };
+
+    render();
+</script>
+
+</body>
+</html>
